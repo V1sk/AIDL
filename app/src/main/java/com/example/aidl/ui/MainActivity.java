@@ -6,15 +6,19 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.example.aidl.MessageSender;
 import com.example.aidl.R;
+import com.example.aidl.data.MessageModel;
 import com.example.aidl.service.MessageService;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
+    private MessageSender messageSender;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +54,17 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             Log.d(TAG, "onServiceConnected");
+            messageSender = MessageSender.Stub.asInterface(service);
+            try {
+                MessageModel messageModel = new MessageModel();
+                messageModel.setFrom("client user id");
+                messageModel.setTo("receiver user id");
+                messageModel.setContent("This is message content");
+
+                messageSender.sendMessage(messageModel);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
         }
 
         @Override
