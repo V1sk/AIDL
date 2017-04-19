@@ -3,6 +3,7 @@ package com.example.aidl.service;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+import android.os.Parcel;
 import android.os.RemoteException;
 import android.util.Log;
 
@@ -20,14 +21,19 @@ public class MessageService extends Service {
 
         @Override
         public void sendMessage(MessageModel messageModel) throws RemoteException {
-            Log.d(TAG, "messageModel: " + messageModel.toString());
+            Log.e(TAG, "messageModel: " + messageModel.toString());
         }
 
+        @Override
+        public boolean onTransact(int code, Parcel data, Parcel reply, int flags) throws RemoteException {
+            return super.onTransact(code, data, reply, flags);
+        }
     };
 
     @Override
     public IBinder onBind(Intent intent) {
         return messageSender;
     }
+
 
 }

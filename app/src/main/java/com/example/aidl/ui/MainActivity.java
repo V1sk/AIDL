@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 
 import com.example.aidl.MessageSender;
 import com.example.aidl.R;
@@ -53,14 +52,17 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            Log.d(TAG, "onServiceConnected");
+            //使用asInterface方法取得AIDL对应的操作接口
             messageSender = MessageSender.Stub.asInterface(service);
-            try {
-                MessageModel messageModel = new MessageModel();
-                messageModel.setFrom("client user id");
-                messageModel.setTo("receiver user id");
-                messageModel.setContent("This is message content");
 
+            //生成消息实体对象
+            MessageModel messageModel = new MessageModel();
+            messageModel.setFrom("client user id");
+            messageModel.setTo("receiver user id");
+            messageModel.setContent("This is message content");
+
+            //调用远程Service的sendMessage方法，并传递消息实体对象
+            try {
                 messageSender.sendMessage(messageModel);
             } catch (RemoteException e) {
                 e.printStackTrace();
@@ -69,7 +71,6 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            Log.d(TAG, "onServiceDisconnected");
         }
     };
 
