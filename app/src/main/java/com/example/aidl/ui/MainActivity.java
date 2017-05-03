@@ -8,7 +8,9 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 
+import com.example.aidl.MessageReceiver;
 import com.example.aidl.MessageSender;
 import com.example.aidl.R;
 import com.example.aidl.data.MessageModel;
@@ -27,10 +29,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * unbindService
+     * 1.unregisterListener
+     * 2.unbindService
      */
     @Override
     protected void onDestroy() {
+        //解除消息监听接口
+        if (messageSender != null && messageSender.asBinder().isBinderAlive()) {
+            try {
+                messageSender.unregisterReceiveListener(messageReceiver);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
         unbindService(serviceConnection);
         super.onDestroy();
     }
@@ -48,6 +59,15 @@ public class MainActivity extends AppCompatActivity {
         startService(intent);
     }
 
+    //消息监听回调接口
+    private MessageReceiver messageReceiver = new MessageReceiver.Stub() {
+
+        @Override
+        public void onMessageReceived(MessageModel receivedMessage) throws RemoteException {
+            Log.d(TAG, "onMessageReceived: " + receivedMessage.toString());
+        }
+    };
+
     ServiceConnection serviceConnection = new ServiceConnection() {
 
         @Override
@@ -61,8 +81,10 @@ public class MainActivity extends AppCompatActivity {
             messageModel.setTo("receiver user id");
             messageModel.setContent("This is message content");
 
-            //调用远程Service的sendMessage方法，并传递消息实体对象
             try {
+                //把接收消息的回调接口注册到服务端
+                messageSender.registerReceiveListener(messageReceiver);
+                //调用远程Service的sendMessage方法，并传递消息实体对象
                 messageSender.sendMessage(messageModel);
             } catch (RemoteException e) {
                 e.printStackTrace();
