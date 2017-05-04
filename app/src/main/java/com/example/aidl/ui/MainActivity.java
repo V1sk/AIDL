@@ -59,6 +59,22 @@ public class MainActivity extends AppCompatActivity {
         startService(intent);
     }
 
+    /**
+     * Binder可能会意外死忙（比如Service Crash），Client监听到Binder死忙后可以进行重连服务等操作
+     */
+    IBinder.DeathRecipient deathRecipient = new IBinder.DeathRecipient() {
+        @Override
+        public void binderDied() {
+            Log.d(TAG, "binderDied");
+            if (messageSender != null) {
+                messageSender.asBinder().unlinkToDeath(this, 0);
+                messageSender = null;
+            }
+            //// TODO: 2017/2/28 重连服务或其他操作
+            setupService();
+        }
+    };
+
     //消息监听回调接口
     private MessageReceiver messageReceiver = new MessageReceiver.Stub() {
 
@@ -82,6 +98,8 @@ public class MainActivity extends AppCompatActivity {
             messageModel.setContent("This is message content");
 
             try {
+                //设置Binder死亡监听
+                messageSender.asBinder().linkToDeath(deathRecipient, 0);
                 //把接收消息的回调接口注册到服务端
                 messageSender.registerReceiveListener(messageReceiver);
                 //调用远程Service的sendMessage方法，并传递消息实体对象
