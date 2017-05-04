@@ -2,6 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.aidl">
 
+    <permission
+        android:name="com.example.aidl.permission.REMOTE_SERVICE_PERMISSION"
+        android:protectionLevel="normal" />
+
+    <uses-permission android:name="com.example.aidl.permission.REMOTE_SERVICE_PERMISSION" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -21,7 +27,7 @@
             android:name=".service.MessageService"
             android:enabled="true"
             android:exported="true"
-            android:process=":remote"/>
+            android:process=":remote" />
     </application>
 
 </manifest>
